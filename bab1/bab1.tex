@@ -1,0 +1,47 @@
+
+\begin{spacing}{1.2}
+  \chapter{PENDAHULUAN}
+\end{spacing}
+
+
+\pagenumbering{arabic}
+\vspace{4ex}
+
+\section{Latar Belakang}
+Penelitian ini dilatarbelakangi oleh meningkatnya kebutuhan lembaga keuangan terhadap sistem analisis risiko kredit yang lebih adaptif, akurat, dan dapat dikelola secara berkelanjutan. Perkembangan pesat di bidang kecerdasan buatan, khususnya Machine Learning (ML), telah menghadirkan peluang baru dalam penilaian kelayakan kredit, baik bagi individu maupun perusahaan. Namun, penerapan ML dalam konteks analisis risiko menghadapi tantangan besar pada tahap operasional dan pemeliharaan model di lingkungan produksi. Untuk menjawab tantangan tersebut, muncul konsep Machine Learning Operations (MLOps) yang menggabungkan prinsip DevOps dengan proses pengembangan, penerapan, serta pengawasan model ML secara berkelanjutan.\cite{google2024mlops}
+
+Perkembangan teknologi finansial di Indonesia telah mendorong transformasi signifikan dalam cara lembaga keuangan menilai risiko kredit. Baik bank konvensional maupun perusahaan financial technology (fintech) kini bergantung pada analisis data untuk menentukan tingkat risiko calon peminjam. Berdasarkan laporan Otoritas Jasa Keuangan (OJK), nilai penyaluran pinjaman fintech lending pada tahun 2024 mencapai lebih dari Rp55 triliun per bulan, dengan jumlah rekening peminjam yang terus meningkat. Namun, di balik pertumbuhan tersebut, risiko gagal bayar (credit default) juga meningkat, sebagaimana tercermin dari rasio Non-Performing Loan (NPL) sektor keuangan yang masih berada di kisaran 2,5 - 3 persen.\cite{ojk2024pojk29} Kondisi ini menunjukkan pentingnya penguatan sistem analisis risiko kredit yang mampu menyesuaikan diri terhadap dinamika ekonomi dan perilaku nasabah.
+
+Model Machine Learning banyak digunakan dalam analisis risiko kredit karena kemampuannya mempelajari pola dari data historis, perilaku transaksi, hingga variabel eksternal seperti kondisi makroekonomi. Model ini dapat memprediksi probabilitas gagal bayar (default probability) calon debitur dengan lebih cepat dan akurat dibandingkan metode tradisional.\cite{mlopsfinance2025} Namun, permasalahan utama muncul ketika model tersebut diterapkan dalam jangka panjang: performa model dapat menurun akibat perubahan data atau perilaku nasabah (model drift), sulit dimonitor secara konsisten, serta tidak memiliki proses pembaruan otomatis. Akibatnya, keputusan kredit menjadi kurang andal dan berpotensi menimbulkan kerugian finansial. Konsep MLOps hadir untuk mengatasi permasalahan tersebut. MLOps menerapkan prinsip DevOps pada siklus hidup model ML, mulai dari tahap data ingestion, training, deployment, monitoring, hingga retraining. Dengan penerapan MLOps, model analisis risiko dapat diperbarui secara otomatis, kinerjanya dimonitor secara berkelanjutan, serta proses audit dan dokumentasinya lebih terjamin. Penelitian ini berfokus pada perancangan dan implementasi pipeline MLOps untuk operasionalisasi model prediktif risiko kredit menggunakan dataset sintetis, transformasi Weight of Evidence (WoE), seleksi Information Value (IV), model XGBoost, layanan inferensi FastAPI, interpretasi SHAP, serta otomasi monitoring dan retraining melalui n8n. \cite{mlopsbanking2025}
+
+\section{Rumusan Masalah}
+Dari latar belakang yang telah dijelaskan, dapat diidentifikasi beberapa permasalahan utama sebagai berikut:
+\begin{enumerate}
+    \item Belum adanya sistem otomatis yang dapat mengelola dan memantau model Machine Learning untuk analisis risiko kredit secara berkelanjutan.
+    \item Kurangnya penerapan konsep MLOps pada sistem analisis risiko kredit di lingkungan perbankan Indonesia, terutama pada proses pembaruan model (retraining) dan pemantauan performa (monitoring).
+    \item Belum tersedia arsitektur pipeline MLOps berbasis low-code yang mengintegrasikan validasi data sintetis, pelacakan eksperimen, deployment API, interpretabilitas model, aturan bisnis, deteksi drift, dan retraining otomatis untuk sistem analisis risiko kredit.
+\end{enumerate}
+\section{Tujuan}
+Tujuan dari penelitian ini adalah:
+\begin{enumerate}
+    \item Merancang arsitektur sistem analisis risiko kredit yang terintegrasi dengan konsep Machine Learning Operations (MLOps).
+    \item Mengembangkan pipeline otomatis yang mencakup pembentukan dan validasi data sintetis, pra-pemrosesan WoE-IV, penanganan ketidakseimbangan kelas, pelatihan XGBoost, pelacakan eksperimen, deployment API, monitoring drift, dan retraining otomatis.
+    \item Mengevaluasi performa model dan kesiapan operasional pipeline melalui metrik prediktif, quality gate data sintetis, interpretasi SHAP, pengujian aturan bisnis, serta pemicuan retraining berbasis n8n.
+\end{enumerate}
+\section{Batasan Masalah}
+Batasan dalam penelitian ini adalah sebagai berikut:
+\begin{enumerate}
+    \item Penelitian difokuskan pada penerapan MLOps dalam konteks analisis risiko kredit, tanpa membahas pengembangan algoritma machine learning baru.
+    \item Dataset yang digunakan merupakan dataset sintetis yang dirancang untuk merepresentasikan karakteristik umum data kredit konsumtif, bukan data nasabah riil dari lembaga keuangan tertentu.
+    \item Implementasi dilakukan pada lingkungan pengujian lokal menggunakan Python, XGBoost, Scikit-Learn, Imbalanced-Learn, MLflow, FastAPI, Docker, Docker Compose, SHAP, dan n8n sebagai workflow orchestration tool.
+    \item Penelitian ini tidak melibatkan data atau kerja sama langsung dengan lembaga keuangan tertentu.
+    \item Fokus penelitian adalah pada perancangan pipeline MLOps, evaluasi performa model, validasi kualitas data sintetis, deployment layanan inferensi, penerapan aturan bisnis, serta monitoring drift dan retraining otomatis.
+\end{enumerate}
+
+\section{Manfaat}
+Manfaat dari penelitian ini adalah:
+\subsection*{Manfaat Akademis} Penelitian ini dapat menjadi referensi bagi pengembangan ilmu pengetahuan di bidang Machine Learning Operations (MLOps), khususnya dalam penerapan teknologi tersebut untuk sistem analisis risiko kredit. Hasil penelitian juga dapat menjadi contoh implementasi pipeline MLOps menggunakan low-code workflow tool seperti n8n dengan data sintetis yang menggambarkan karakteristik umum data kredit konsumtif.
+\subsection*{Manfaat Teknis} Penelitian ini menghasilkan rancangan dan implementasi arsitektur MLOps berbasis n8n yang dapat digunakan sebagai acuan dalam membangun sistem analisis risiko kredit yang efisien dan berkelanjutan. Pipeline mencakup proses validasi data sintetis, preprocessing WoE-IV, training, deployment API, monitoring drift, interpretasi model, serta retraining model secara otomatis.
+\subsection*{Manfaat Praktis} Meskipun penelitian ini tidak dilakukan secara langsung di lembaga keuangan tertentu, hasilnya dapat dijadikan prototipe atau simulasi bagi bank maupun perusahaan fintech yang ingin mengadopsi MLOps dengan pendekatan low-code, layanan inferensi berbasis API, dan aturan bisnis yang dapat diaudit.
+\subsection*{Manfaat Sosial dan Industri} Secara tidak langsung, penelitian ini berkontribusi terhadap peningkatan praktik tata kelola model machine learning di sektor keuangan Indonesia melalui penerapan konsep MLOps yang transparan, adaptif, dan sesuai dengan prinsip akuntabilitas yang ditekankan oleh OJK dan Bank Indonesia.
+
