@@ -36,27 +36,27 @@ Dalam implementasinya, n8n berperan sebagai orkestrator proses yang menghubungka
 
 \subsection{Perancangan Database dan Penyimpanan Data}
 
-Sistem menyimpan seluruh data nasabah secara persisten menggunakan \textbf{SQLite} dengan nama file \texttt{nasabah.db} yang disimpan di direktori \texttt{serving/}. Database diinisialisasi secara otomatis pada saat \textit{startup} layanan oleh fungsi \texttt{init\_db()} melalui modul \texttt{database.py}, yang mengimpor seluruh baris dari dataset sintetis \texttt{synthetic\_credit\_risk\_data.csv} apabila tabel belum tersedia.
+Sistem menyimpan seluruh data nasabah secara persisten menggunakan \textbf{SQLite} dengan nama file nasabah.db yang disimpan di direktori serving/. Database diinisialisasi secara otomatis pada saat \textit{startup} layanan oleh fungsi init\_db() melalui modul database.py, yang mengimpor seluruh baris dari dataset sintetis synthetic\_credit\_risk\_data.csv apabila tabel belum tersedia.
 
-Database terdiri atas dua tabel. Tabel \texttt{nasabah} merupakan tabel utama yang menyimpan 40 lebih atribut setiap nasabah, mulai dari data identitas, profil pekerjaan, kondisi finansial, parameter risiko hasil model. Tabel \texttt{sent\_emails} berfungsi sebagai log audit yang mencatat setiap pengiriman email konfirmasi kepada pengambil keputusan. Relasi antara kedua tabel ini diikat melalui kolom \texttt{customer\_id} sebagai \textit{foreign key}.
+Database terdiri atas dua tabel. Tabel nasabah merupakan tabel utama yang menyimpan 40 lebih atribut setiap nasabah, mulai dari data identitas, profil pekerjaan, kondisi finansial, parameter risiko hasil model. Tabel sent\_emails berfungsi sebagai log audit yang mencatat setiap pengiriman email konfirmasi kepada pengambil keputusan. Relasi antara kedua tabel ini diikat melalui kolom customer\_id sebagai \textit{foreign key}.
 
 \begin{table}[H]
 \centering
-\caption{Kelompok Kolom Utama Tabel \texttt{nasabah}}
+\caption{Kelompok Kolom Utama Tabel nasabah}
 \label{tab:db-cols}
 \begin{tabularx}{\textwidth}{|p{3.5cm}|X|}
 \hline
 \textbf{Kelompok} & \textbf{Kolom Utama} \\ \hline
-Identitas & \texttt{customer\_id} (PK), \texttt{loan\_id}, \texttt{name\_masked}, \texttt{age}, \texttt{gender}, \texttt{marital\_status} \\ \hline
-Pekerjaan \& Pendapatan & \texttt{employment\_type}, \texttt{pension\_status}, \texttt{monthly\_income}, \texttt{salary\_source}, \texttt{income\_stability}, \texttt{salary\_volatility} \\ \hline
-Kesehatan Finansial & \texttt{bureau\_score}, \texttt{DTI}, \texttt{past\_due\_months}, \texttt{credit\_history\_length}, \texttt{avg\_account\_balance}, \texttt{other\_active\_loans\_count} \\ \hline
-Detail Pinjaman & \texttt{product\_type}, \texttt{loan\_amount}, \texttt{term\_months}, \texttt{interest\_rate}, \texttt{collateral\_flag}, \texttt{ltv}, \texttt{outstanding\_balance} \\ \hline
-Output Model ML & \texttt{PD}, \texttt{LGD}, \texttt{EAD}, \texttt{expected\_loss}, \texttt{risk\_grade}, \texttt{missed\_payment\_flag} \\ \hline
-Status Keputusan & \texttt{approval\_status} (Pending / Accepted / Rejected) \\ \hline
+Identitas & customer\_id (PK), loan\_id, name\_masked, age, gender, marital\_status \\ \hline
+Pekerjaan \& Pendapatan & employment\_type, pension\_status, monthly\_income, salary\_source, income\_stability, salary\_volatility \\ \hline
+Kesehatan Finansial & bureau\_score, DTI, past\_due\_months, credit\_history\_length, avg\_account\_balance, other\_active\_loans\_count \\ \hline
+Detail Pinjaman & product\_type, loan\_amount, term\_months, interest\_rate, collateral\_flag, ltv, outstanding\_balance \\ \hline
+Output Model ML & PD, LGD, EAD, expected\_loss, risk\_grade, missed\_payment\_flag \\ \hline
+Status Keputusan & approval\_status (Pending / Accepted / Rejected) \\ \hline
 \end{tabularx}
 \end{table}
 
-Seluruh operasi \textit{Create, Read, Update, Delete} (CRUD) terhadap tabel \texttt{nasabah} diekspos melalui REST API berbasis \textbf{FastAPI} (\texttt{app.py}). Tabel~\ref{tab:crud-bab3} merangkum pemetaan \textit{endpoint} API ke fungsi database.
+Seluruh operasi \textit{Create, Read, Update, Delete} (CRUD) terhadap tabel nasabah diekspos melalui REST API berbasis \textbf{FastAPI} (app.py). Tabel~\ref{tab:crud-bab3} merangkum pemetaan \textit{endpoint} API ke fungsi database.
 
 \begin{table}[H]
 \centering
@@ -65,19 +65,19 @@ Seluruh operasi \textit{Create, Read, Update, Delete} (CRUD) terhadap tabel \tex
 \begin{tabularx}{\textwidth}{|l|X|l|}
 \hline
 \textbf{Metode} & \textbf{Endpoint} & \textbf{Fungsi Database} \\ \hline
-GET    & \texttt{/api/nasabah}                          & \texttt{get\_nasabah\_list()} \\ \hline
-GET    & \texttt{/api/nasabah/\{id\}}                   & \texttt{get\_nasabah\_by\_id()} \\ \hline
-POST   & \texttt{/api/nasabah}                          & \texttt{create\_nasabah()} \\ \hline
-PUT    & \texttt{/api/nasabah/\{id\}}                   & \texttt{update\_nasabah()} \\ \hline
-DELETE & \texttt{/api/nasabah/\{id\}}                   & \texttt{delete\_nasabah()} \\ \hline
-GET    & \texttt{/api/nasabah/\{id\}/\allowbreak approve}           & \texttt{update\_approval\_status("Accepted")} \\ \hline
-GET    & \texttt{/api/nasabah/\{id\}/\allowbreak reject}            & \texttt{update\_approval\_status("Rejected")} \\ \hline
-POST   & \texttt{/api/nasabah/\{id\}/\allowbreak send-confirmation} & \texttt{create\_sent\_email()} \\ \hline
-GET    & \texttt{/api/sent-emails}                      & \texttt{get\_sent\_emails()} \\ \hline
+GET    & /api/nasabah                          & get\_nasabah\_list() \\ \hline
+GET    & /api/nasabah/\{id\}                   & get\_nasabah\_by\_id() \\ \hline
+POST   & /api/nasabah                          & create\_nasabah() \\ \hline
+PUT    & /api/nasabah/\{id\}                   & update\_nasabah() \\ \hline
+DELETE & /api/nasabah/\{id\}                   & delete\_nasabah() \\ \hline
+GET    & /api/nasabah/\{id\/\allowbreak approve}           & update\_approval\_status("Accepted") \\ \hline
+GET    & /api/nasabah/\{id\/\allowbreak reject}            & update\_approval\_status("Rejected") \\ \hline
+POST   & /api/nasabah/\{id\/\allowbreak send-confirmation} & create\_sent\_email() \\ \hline
+GET    & /api/sent-emails                      & get\_sent\_emails() \\ \hline
 \end{tabularx}
 \end{table}
 
-Agar API tahan terhadap ketidakcocokan skema, sebelum setiap operasi INSERT atau UPDATE, modul \texttt{database.py} mengkueri kolom yang tersedia melalui \texttt{PRAGMA table\_info(nasabah)} sehingga hanya kolom yang benar-benar ada di skema yang ditulis. Kolom \texttt{approval\_status} yang tidak terdapat pada dataset CSV asli ditambahkan secara dinamis melalui \texttt{ALTER TABLE} saat \texttt{init\_db()} pertama kali dijalankan.
+Agar API tahan terhadap ketidakcocokan skema, sebelum setiap operasi INSERT atau UPDATE, modul database.py mengkueri kolom yang tersedia melalui PRAGMA table\_info(nasabah) sehingga hanya kolom yang benar-benar ada di skema yang ditulis. Kolom approval\_status yang tidak terdapat pada dataset CSV asli ditambahkan secara dinamis melalui ALTER TABLE saat init\_db() pertama kali dijalankan.
 
 \subsection{Pengumpulan dan Simulasi Data}
 Penelitian ini menggunakan \textit{Synthetic Data Generation} untuk mengatasi keterbatasan akses terhadap data kredit riil yang dilindungi oleh regulasi perlindungan data pribadi[cite: 24]. Data yang dibangkitkan terdiri atas 10.000 sampel yang merefleksikan karakteristik nasabah perbankan ritel, khususnya segmen ASN dan pensiunan[cite: 25, 27]. Pemilihan data sintetis dilakukan agar penelitian tetap dapat merepresentasikan pola umum kredit konsumtif tanpa melanggar aspek kerahasiaan dan kepatuhan hukum.
@@ -166,7 +166,7 @@ Setelah model terbaik diperoleh, tahap berikutnya adalah mengintegrasikan model 
 \textit{Workflow} utama diatur menggunakan n8n, yang berfungsi memicu dan menghubungkan setiap tahapan dalam \textit{pipeline}. Sebagai contoh, n8n dapat menjalankan proses pelatihan saat dataset baru tersedia, melanjutkan ke proses evaluasi, lalu mendaftarkan model terbaik ke registry bila memenuhi kriteria performa. Sementara itu, MLflow digunakan untuk menyimpan parameter eksperimen, metrik hasil pelatihan, dan artefak model. Dengan demikian, setiap eksperimen dapat ditelusuri kembali sehingga proses pengembangan model menjadi lebih transparan dan reprodusibel.
 
 
-Selain \textit{pipeline} \textit{retraining}, \textit{workflow} n8n juga mengintegrasikan jalur \textbf{ingesti data nasabah berbasis email} secara otomatis sebagai \textit{pipeline} kedua yang terpisah. Setiap jam, n8n memonitor \textit{inbox} Gmail untuk email bersubjek \textit{"Credit Application"} yang menyertakan lampiran berformat PDF. Formulir yang diterima secara otomatis diunduh, diteruskan ke skrip \texttt{parse\_pdf.py} untuk proses ekstraksi data, kemudian disimpan ke database nasabah melalui \textit{endpoint} \texttt{POST /api/nasabah}. Dengan demikian, proses \textit{onboarding} nasabah baru dapat dilakukan sepenuhnya tanpa intervensi manual --- formulir kredit yang dikirimkan melalui email langsung masuk ke database dan siap untuk diprediksi oleh model.
+Selain \textit{pipeline} \textit{retraining}, \textit{workflow} n8n juga mengintegrasikan jalur \textbf{ingesti data nasabah berbasis email} secara otomatis sebagai \textit{pipeline} kedua yang terpisah. Setiap jam, n8n memonitor \textit{inbox} Gmail untuk email bersubjek \textit{"Credit Application"} yang menyertakan lampiran berformat PDF. Formulir yang diterima secara otomatis diunduh, diteruskan ke skrip parse\_pdf.py untuk proses ekstraksi data, kemudian disimpan ke database nasabah melalui \textit{endpoint} POST /api/nasabah. Dengan demikian, proses \textit{onboarding} nasabah baru dapat dilakukan sepenuhnya tanpa intervensi manual --- formulir kredit yang dikirimkan melalui email langsung masuk ke database dan siap untuk diprediksi oleh model.
 
 \begin{table}[H]
 \centering
@@ -175,12 +175,12 @@ Selain \textit{pipeline} \textit{retraining}, \textit{workflow} n8n juga mengint
 \begin{tabularx}{\textwidth}{|p{3.5cm}|X|p{3.5cm}|}
 \hline
 \textbf{Pipeline} & \textbf{Alur} & \textbf{Trigger} \\ \hline
-\textit{Retraining Pipeline} & Schedule → Jalankan \texttt{trainingCredit.py} → Cek AUC $>$ 0.75 → Promosi ke Production MLflow → \textit{Reload} model & Terjadwal (7 hari sekali) \\ \hline
-\textit{Ingestion Pipeline} & Gmail Trigger → Unduh lampiran PDF → \texttt{parse\_pdf.py} → Validasi JSON → \texttt{POST /api/nasabah} & Setiap jam (polling Gmail) \\ \hline
+\textit{Retraining Pipeline} & Schedule → Jalankan trainingCredit.py → Cek AUC $>$ 0.75 → Promosi ke Production MLflow → \textit{Reload} model & Terjadwal (7 hari sekali) \\ \hline
+\textit{Ingestion Pipeline} & Gmail Trigger → Unduh lampiran PDF → parse\_pdf.py → Validasi JSON → POST /api/nasabah & Setiap jam (polling Gmail) \\ \hline
 \end{tabularx}
 \end{table}
 
-Pelacakan eksperimen dilakukan menggunakan \textbf{MLflow}, yang mencatat parameter \textit{hyperparameter}, metrik evaluasi (AUC, F1-Score), dan artefak model setiap kali proses pelatihan dijalankan. Selain pencatatan eksperimen, sistem juga menggunakan \textbf{MLflow Tracing} (\texttt{@mlflow.trace}) untuk mencatat setiap permintaan inferensi ke \textit{endpoint} \texttt{/predict} beserta versi model yang digunakan. Kemampuan \textit{audit trail} per-prediksi ini mendukung kebutuhan kepatuhan regulasi, termasuk ketentuan transparansi model sesuai POJK Nomor 29 Tahun 2024.
+Pelacakan eksperimen dilakukan menggunakan \textbf{MLflow}, yang mencatat parameter \textit{hyperparameter}, metrik evaluasi (AUC, F1-Score), dan artefak model setiap kali proses pelatihan dijalankan. Selain pencatatan eksperimen, sistem juga menggunakan \textbf{MLflow Tracing} (@mlflow.trace) untuk mencatat setiap permintaan inferensi ke \textit{endpoint} /predict beserta versi model yang digunakan. Kemampuan \textit{audit trail} per-prediksi ini mendukung kebutuhan kepatuhan regulasi, termasuk ketentuan transparansi model sesuai POJK Nomor 29 Tahun 2024.
 
 \subsubsection{Deployment Model dan Layanan Inferensi}
 Model yang lolos evaluasi disimpan sebagai model kandidat dan dipublikasikan sebagai layanan inferensi menggunakan FastAPI. Layanan ini menerima input atribut nasabah, melakukan transformasi yang diperlukan, kemudian menghasilkan skor risiko atau probabilitas gagal bayar. Agar konsisten di berbagai lingkungan, seluruh komponen deployment dikemas menggunakan Docker. Pendekatan kontainerisasi ini mempermudah proses distribusi, pengujian, dan migrasi sistem ke server pengembangan maupun produksi.
@@ -191,12 +191,12 @@ Model yang lolos evaluasi disimpan sebagai model kandidat dan dipublikasikan seb
 Sistem tidak memberikan keputusan kredit secara otomatis. Setiap hasil prediksi model harus dikonfirmasi secara manual oleh analis kredit atau pejabat pemutus melalui mekanisme \textit{Human-in-the-Loop} (HITL) berbasis email. Mekanisme ini diimplementasikan melalui alur berikut:
 
 \begin{enumerate}
-    \item Setelah model menghasilkan prediksi, analis kredit memicu \textit{endpoint} \texttt{POST /api/\allowbreak nasabah/\allowbreak\{id\}/\allowbreak send-confirmation} dengan menyertakan alamat email reviewer.
+    \item Setelah model menghasilkan prediksi, analis kredit memicu \textit{endpoint} POST /api/\allowbreak nasabah/\allowbreak\{id\/\allowbreak send-confirmation} dengan menyertakan alamat email reviewer.
     \item Sistem menyusun \textbf{email HTML} yang berisi ringkasan risiko nasabah---mencakup \textit{bureau score}, pendapatan bulanan, jumlah pinjaman, \textit{risk grade}, dan probabilitas \textit{default}---beserta dua tombol interaktif: \textbf{Setuju} dan \textbf{Tolak}.
-    \item Email dikirimkan kepada reviewer melalui \textbf{n8n webhook} (\texttt{/webhook/send-confirmation}) yang meneruskan pesan via server SMTP Gmail.
-    \item Setiap pengiriman email dicatat secara otomatis ke tabel \texttt{sent\_emails} sebagai \textit{audit trail}.
-    \item Klik pada tombol Setuju memanggil \texttt{GET /api/nasabah/\{id\}/approve}, sedangkan klik Tolak memanggil \texttt{GET /api/nasabah/\{id\}/reject}. Kedua \textit{endpoint} ini memperbarui kolom \texttt{approval\_status} di database menjadi \texttt{"Accepted"} atau \texttt{"Rejected"} dan menampilkan halaman konfirmasi kepada reviewer.
-    \item Apabila email konfirmasi dikirim ulang untuk nasabah yang sama, sistem secara otomatis mereset \texttt{approval\_status} kembali ke \texttt{"Pending"} agar siklus peninjauan ulang dimulai dari awal.
+    \item Email dikirimkan kepada reviewer melalui \textbf{n8n webhook} (/webhook/send-confirmation) yang meneruskan pesan via server SMTP Gmail.
+    \item Setiap pengiriman email dicatat secara otomatis ke tabel sent\_emails sebagai \textit{audit trail}.
+    \item Klik pada tombol Setuju memanggil GET /api/nasabah/\{id\/approve}, sedangkan klik Tolak memanggil GET /api/nasabah/\{id\/reject}. Kedua \textit{endpoint} ini memperbarui kolom approval\_status di database menjadi "Accepted" atau "Rejected" dan menampilkan halaman konfirmasi kepada reviewer.
+    \item Apabila email konfirmasi dikirim ulang untuk nasabah yang sama, sistem secara otomatis mereset approval\_status kembali ke "Pending" agar siklus peninjauan ulang dimulai dari awal.
 \end{enumerate}
 
 \begin{figure}[H]
@@ -205,9 +205,9 @@ Sistem tidak memberikan keputusan kredit secara otomatis. Setiap hasil prediksi 
   \node[brstep, align=center] (pd)     {Prediksi PD\\dan risk\_grade selesai};
   \node[brstep, align=center, below=of pd] (email)  {Kirim email konfirmasi\\via n8n (SMTP)};
   \node[brdecision, align=center, below=of email] (decide) {Keputusan\\Analis?};
-  \node[brok, align=center, right=3cm of decide] (acc)  {\texttt{approval\_status}\\= \textbf{Accepted}};
-  \node[brerr, align=center, left=3cm of decide] (rej)  {\texttt{approval\_status}\\= \textbf{Rejected}};
-  \node[brstep, align=center, above=1.2cm of email] (reset) {Reset ke\\\texttt{approval\_status}\\= \textbf{Pending}};
+  \node[brok, align=center, right=3cm of decide] (acc)  {approval\_status\\= \textbf{Accepted}};
+  \node[brerr, align=center, left=3cm of decide] (rej)  {approval\_status\\= \textbf{Rejected}};
+  \node[brstep, align=center, above=1.2cm of email] (reset) {Reset ke\\approval\_status\\= \textbf{Pending}};
 
   \draw[brarrow] (pd)     -- (email);
   \draw[brarrow] (email)  -- (decide);
@@ -217,7 +217,7 @@ Sistem tidak memberikan keputusan kredit secara otomatis. Setiap hasil prediksi 
     node[right, align=center, font=\footnotesize]{Kirim ulang\\email} (reset.east);
   \draw[brarrow, dashed] (reset) -- (email);
 \end{tikzpicture}
-\caption{Siklus \texttt{approval\_status} --- keputusan kredit berbasis konfirmasi email manusia.}
+\caption{Siklus approval\_status --- keputusan kredit berbasis konfirmasi email manusia.}
 \label{fig:hitl-flow}
 \end{figure}
 
@@ -238,7 +238,7 @@ Penerapan batas usia pelunasan dilakukan melalui sistem logika hibrida yang meng
     \label{eq:usia-pelunasan}
 \end{equation}
 
-Apabila nilai usia pelunasan pada Persamaan~\ref{eq:usia-pelunasan} melebihi 80 tahun, sistem memberikan status \texttt{Grade Undefined} dan menghitung rekomendasi tenor maksimal yang diperbolehkan secara dinamis:
+Apabila nilai usia pelunasan pada Persamaan~\ref{eq:usia-pelunasan} melebihi 80 tahun, sistem memberikan status Grade Undefined dan menghitung rekomendasi tenor maksimal yang diperbolehkan secara dinamis:
 
 \begin{equation}
     \text{Tenor Maksimal (Bulan)} = (80 - \text{Usia Saat Pengajuan}) \times 12
@@ -249,7 +249,7 @@ Berdasarkan kedua persamaan tersebut, sistem membagi kondisi nasabah ke dalam \t
 
 \begin{enumerate}
     \item \textbf{Zona Lolos} --- Usia pelunasan $\leq$ 80 tahun. Data diteruskan ke model XGBoost secara normal untuk memperoleh \textit{risk grade} A, B, C, atau D.
-    \item \textbf{Zona Mitigasi Dinamis} --- Usia nasabah saat pengajuan masih di bawah 80 tahun, tetapi tenor yang diminta menyebabkan usia pelunasan melewati 80 tahun. Sistem memberikan \texttt{Grade Undefined} dan menghitung rekomendasi tenor maksimal menggunakan Persamaan~\ref{eq:tenor-maks}. Jika nasabah memiliki asuransi jiwa kredit aktif yang nilainya mencukupi jumlah pinjaman, sistem juga dapat merekomendasikan dispensasi melalui komite kredit.
+    \item \textbf{Zona Mitigasi Dinamis} --- Usia nasabah saat pengajuan masih di bawah 80 tahun, tetapi tenor yang diminta menyebabkan usia pelunasan melewati 80 tahun. Sistem memberikan Grade Undefined dan menghitung rekomendasi tenor maksimal menggunakan Persamaan~\ref{eq:tenor-maks}. Jika nasabah memiliki asuransi jiwa kredit aktif yang nilainya mencukupi jumlah pinjaman, sistem juga dapat merekomendasikan dispensasi melalui komite kredit.
     \item \textbf{Zona \textit{Joint-Borrower}} --- Usia nasabah saat pengajuan telah mencapai 80 tahun atau lebih. Pada kondisi ini, pengurangan tenor tidak lagi memadai karena sisa batas usia bernilai nol atau negatif. Sistem merekomendasikan alternatif pengajuan berbasis \textit{joint-income} atau \textit{co-borrower} bersama anggota keluarga inti yang berusia di bawah 60 tahun.
 \end{enumerate}
 
@@ -259,17 +259,17 @@ Pemisahan tiga zona ini penting karena model \textit{machine learning} hanya mem
 Setelah model aktif digunakan, sistem melakukan pemantauan terhadap perubahan distribusi fitur dan perubahan hubungan antara fitur dengan target. Pemantauan \textit{data drift} dilakukan dengan membandingkan distribusi data baru terhadap distribusi referensi, sedangkan pemantauan \textit{concept drift} dilakukan dengan mengamati penurunan metrik kinerja model dari waktu ke waktu. Jika indikator \textit{drift} melewati ambang batas yang telah ditentukan, n8n akan memicu ulang proses pelatihan model menggunakan data terbaru. Dengan mekanisme ini, model dapat diperbarui secara lebih responsif tanpa menunggu evaluasi manual yang berpotensi terlambat.
 
 
-Pemantauan \textit{drift} pada sistem ini diimplementasikan menggunakan pendekatan \textbf{dual-trigger} dalam modul \texttt{drift\_monitor.py}. Sistem tidak bergantung pada satu mekanisme tunggal, melainkan menggabungkan dua jalur pemicuan yang saling melengkapi:
+Pemantauan \textit{drift} pada sistem ini diimplementasikan menggunakan pendekatan \textbf{dual-trigger} dalam modul drift\_monitor.py. Sistem tidak bergantung pada satu mekanisme tunggal, melainkan menggabungkan dua jalur pemicuan yang saling melengkapi:
 
 \begin{enumerate}
-    \item \textbf{Trigger Berbasis Jadwal (\textit{Schedule-Based Trigger})} --- n8n menjalankan \textit{workflow} pemantauan secara terjadwal setiap \textbf{7 hari sekali}. Pada setiap eksekusi, modul membandingkan distribusi data inferensi terkini dengan distribusi data referensi menggunakan \textit{Kolmogorov-Smirnov (KS) Statistic}\footnote{KS Statistic adalah uji non-parametrik yang mengukur jarak maksimum antara dua fungsi distribusi kumulatif (CDF). Penggunaannya tidak memerlukan asumsi distribusi tertentu, sehingga cocok untuk fitur tabular dengan distribusi beragam.}. Nilai KS-statistic dihitung per fitur; apabila KS-statistic pada fitur kritis (seperti \texttt{monthly\_income} atau \texttt{loan\_amount}) melampaui ambang batas $\alpha = 0.05$ berdasarkan uji signifikansi statistik, sistem mengklasifikasikan kondisi sebagai \textit{drift terdeteksi}.
+    \item \textbf{Trigger Berbasis Jadwal (\textit{Schedule-Based Trigger})} --- n8n menjalankan \textit{workflow} pemantauan secara terjadwal setiap \textbf{7 hari sekali}. Pada setiap eksekusi, modul membandingkan distribusi data inferensi terkini dengan distribusi data referensi menggunakan \textit{Kolmogorov-Smirnov (KS) Statistic}\footnote{KS Statistic adalah uji non-parametrik yang mengukur jarak maksimum antara dua fungsi distribusi kumulatif (CDF). Penggunaannya tidak memerlukan asumsi distribusi tertentu, sehingga cocok untuk fitur tabular dengan distribusi beragam.}. Nilai KS-statistic dihitung per fitur; apabila KS-statistic pada fitur kritis (seperti monthly\_income atau loan\_amount) melampaui ambang batas $\alpha = 0.05$ berdasarkan uji signifikansi statistik, sistem mengklasifikasikan kondisi sebagai \textit{drift terdeteksi}.
 
-    \item \textbf{Trigger Berbasis Event (\textit{Event-Based Trigger})} --- Setiap kali data nasabah baru dikirim melalui \textit{endpoint} \texttt{POST /api/nasabah}, sistem secara otomatis menghitung jumlah kumulatif data baru yang tersimpan sejak model terakhir dilatih. Apabila jumlah data baru melampaui ambang batas konfigurasi (\textit{ingestion threshold}), \textit{workflow} n8n memicu proses evaluasi dan retraining secara langsung tanpa menunggu jadwal mingguan.
+    \item \textbf{Trigger Berbasis Event (\textit{Event-Based Trigger})} --- Setiap kali data nasabah baru dikirim melalui \textit{endpoint} POST /api/nasabah, sistem secara otomatis menghitung jumlah kumulatif data baru yang tersimpan sejak model terakhir dilatih. Apabila jumlah data baru melampaui ambang batas konfigurasi (\textit{ingestion threshold}), \textit{workflow} n8n memicu proses evaluasi dan retraining secara langsung tanpa menunggu jadwal mingguan.
 \end{enumerate}
 
 Kombinasi kedua trigger ini memastikan sistem responsif terhadap perubahan mendadak (ditangani oleh event trigger) sekaligus melakukan pemantauan rutin terjadwal (ditangani oleh schedule trigger). Pada lingkungan produksi, mekanisme ini mencegah model berjalan terlalu lama pada distribusi data yang telah bergeser signifikan.
 
-Agar deteksi \textit{drift} dapat beroperasi secara \textit{closed-loop}, setiap permintaan prediksi ke \textit{endpoint} \texttt{/predict} secara otomatis dicatat ke file \texttt{n8n\_data/inference\_logs.jsonl}. File \textit{log} ini berisi seluruh fitur input nasabah, probabilitas \textit{default} yang dihasilkan model, dan \textit{timestamp} prediksi. Modul \texttt{drift\_monitor.py} kemudian membandingkan distribusi data di file \textit{log} ini dengan distribusi referensi dari data pelatihan. Tanpa mekanisme pencatatan inferensi ini, deteksi \textit{drift} tidak memiliki data produksi yang representatif untuk dianalisis.
+Agar deteksi \textit{drift} dapat beroperasi secara \textit{closed-loop}, setiap permintaan prediksi ke \textit{endpoint} /predict secara otomatis dicatat ke file n8n\_data/inference\_logs.jsonl. File \textit{log} ini berisi seluruh fitur input nasabah, probabilitas \textit{default} yang dihasilkan model, dan \textit{timestamp} prediksi. Modul drift\_monitor.py kemudian membandingkan distribusi data di file \textit{log} ini dengan distribusi referensi dari data pelatihan. Tanpa mekanisme pencatatan inferensi ini, deteksi \textit{drift} tidak memiliki data produksi yang representatif untuk dianalisis.
 
 \subsection{Interpretasi Model (XAI) dan Kepatuhan Regulasi}
 Untuk menjaga transparansi dan mendukung kebutuhan audit, sistem menggunakan metode SHAP (\textit{SHapley Additive exPlanations})[cite: 149]. SHAP digunakan untuk menjelaskan kontribusi masing-masing fitur terhadap skor risiko yang dihasilkan model. Penjelasan ini penting karena model risiko kredit tidak hanya dituntut akurat, tetapi juga harus dapat memberikan alasan yang dapat dipahami oleh analis, auditor, maupun pihak regulator.

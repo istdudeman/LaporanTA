@@ -665,7 +665,7 @@ Mekanisme mitigasi tersebut dibagi ke dalam \textbf{tiga zona keputusan}:
 \begin{enumerate}
     \item \textbf{Zona Lolos Batas Usia} --- kondisi ketika usia pelunasan $\leq$ 80 tahun. Pada zona ini, data tetap dikirimkan ke model XGBoost untuk memperoleh probabilitas \textit{default} dan \textit{risk grade} secara normal.
 
-    \item \textbf{Zona Mitigasi Dinamis} --- kondisi ketika usia nasabah saat pengajuan masih di bawah 80 tahun, tetapi tenor yang diminta menyebabkan usia pelunasan melewati 80 tahun. Pada zona ini, sistem memberikan status \texttt{Grade Undefined} dan menghitung rekomendasi tenor maksimal secara dinamis menggunakan Persamaan \ref{eq:bab4_max_tenor}.
+    \item \textbf{Zona Mitigasi Dinamis} --- kondisi ketika usia nasabah saat pengajuan masih di bawah 80 tahun, tetapi tenor yang diminta menyebabkan usia pelunasan melewati 80 tahun. Pada zona ini, sistem memberikan status Grade Undefined dan menghitung rekomendasi tenor maksimal secara dinamis menggunakan Persamaan \ref{eq:bab4_max_tenor}.
 
     \begin{equation}
         \text{Tenor Maksimal (Bulan)} = (80 - \text{Usia Saat Pengajuan}) \times 12
@@ -690,7 +690,7 @@ Setelah mekanisme ini diterapkan, sistem berhasil menyeimbangkan kecerdasan pred
 
 \section{Pengujian Deteksi Drift dan Retraining Otomatis}
 \label{sec:bab4_drift_retraining}
-Pengujian \textit{drift} dilakukan untuk memvalidasi mekanisme pemantauan distribusi data produksi pada modul \texttt{drift\_monitor.py}. Sistem yang dibangun menggunakan pendekatan \textbf{dual-trigger}, yaitu dua jalur pemicuan yang bekerja secara bersamaan: trigger berbasis jadwal setiap 7 hari dan trigger berbasis event saat data nasabah baru diinput. Pengujian difokuskan pada skenario terkontrol untuk membuktikan bahwa kedua mekanisme ini dapat mendeteksi pergeseran distribusi dan secara otomatis memicu proses retraining melalui webhook n8n.
+Pengujian \textit{drift} dilakukan untuk memvalidasi mekanisme pemantauan distribusi data produksi pada modul drift\_monitor.py. Sistem yang dibangun menggunakan pendekatan \textbf{dual-trigger}, yaitu dua jalur pemicuan yang bekerja secara bersamaan: trigger berbasis jadwal setiap 7 hari dan trigger berbasis event saat data nasabah baru diinput. Pengujian difokuskan pada skenario terkontrol untuk membuktikan bahwa kedua mekanisme ini dapat mendeteksi pergeseran distribusi dan secara otomatis memicu proses retraining melalui webhook n8n.
 
 \subsection{Pengujian Trigger Berbasis Jadwal}
 
@@ -713,11 +713,11 @@ Skenario \textbf{stabil} dibandingkan dengan skenario \textbf{drift} yang mensim
 \end{tabular}
 \end{table}
 
-Pada kondisi stabil, nilai KS-statistic kedua fitur berada di bawah 0,05 dengan \textit{p-value} $> 0{,}05$, menunjukkan bahwa distribusi produksi tidak berbeda signifikan dari distribusi referensi --- layanan API tetap berjalan normal. Pada kondisi drifted, nilai KS-statistic melonjak melampaui ambang signifikansi $\alpha = 0{,}05$, sehingga sistem mengklasifikasikan kondisi sebagai \textit{drift terdeteksi} dan mengeksekusi fungsi \texttt{trigger\_retrain} untuk mengirim \textit{HTTP POST} ke server n8n.
+Pada kondisi stabil, nilai KS-statistic kedua fitur berada di bawah 0,05 dengan \textit{p-value} $> 0{,}05$, menunjukkan bahwa distribusi produksi tidak berbeda signifikan dari distribusi referensi --- layanan API tetap berjalan normal. Pada kondisi drifted, nilai KS-statistic melonjak melampaui ambang signifikansi $\alpha = 0{,}05$, sehingga sistem mengklasifikasikan kondisi sebagai \textit{drift terdeteksi} dan mengeksekusi fungsi trigger\_retrain untuk mengirim \textit{HTTP POST} ke server n8n.
 
 \subsection{Pengujian Trigger Berbasis Event}
 
-Jalur kedua bekerja secara independen. Setiap kali endpoint \texttt{POST /api/nasabah} menerima data nasabah baru, sistem menambah penghitung kumulatif data baru sejak model terakhir dilatih. Apabila penghitung melampaui \textit{ingestion threshold} yang dikonfigurasi, \textit{workflow} n8n memicu evaluasi dan retraining secara langsung tanpa menunggu jadwal mingguan.
+Jalur kedua bekerja secara independen. Setiap kali endpoint POST /api/nasabah menerima data nasabah baru, sistem menambah penghitung kumulatif data baru sejak model terakhir dilatih. Apabila penghitung melampaui \textit{ingestion threshold} yang dikonfigurasi, \textit{workflow} n8n memicu evaluasi dan retraining secara langsung tanpa menunggu jadwal mingguan.
 
 Hal ini menunjukkan bahwa pipeline MLOps mampu membentuk mekanisme \textit{closed-loop automation}: model tidak hanya digunakan untuk inferensi, tetapi juga dipantau dan diperbarui secara responsif --- baik oleh perubahan distribusi data (schedule trigger) maupun oleh volume data baru yang masuk (event trigger).
 
