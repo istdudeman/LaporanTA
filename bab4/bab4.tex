@@ -713,6 +713,8 @@ Skenario \textbf{stabil} dibandingkan dengan skenario \textbf{drift} yang mensim
 \end{tabular}
 \end{table}
 
+Selain mengevaluasi metrik statistik, rancangan monitoring juga memerlukan pencatatan inferensi agar sistem memiliki data produksi yang dapat dibandingkan dengan data referensi. Setiap permintaan ke \textit{endpoint} \textit{/predict} dapat dicatat dalam format log terstruktur yang berisi fitur input, probabilitas \textit{default}, \textit{grade} risiko, dan waktu prediksi. Log inferensi tersebut menjadi dasar untuk menghitung pergeseran distribusi secara berkala, baik pada tingkat skor prediksi maupun fitur individual. Dengan demikian, proses deteksi \textit{drift} tidak hanya bergantung pada data simulasi, tetapi juga dapat diperluas menjadi pemantauan produksi yang bersifat \textit{closed-loop}.
+
 Pada kondisi stabil, nilai KS-statistic kedua fitur berada di bawah 0,05 dengan \textit{p-value} $> 0{,}05$, menunjukkan bahwa distribusi produksi tidak berbeda signifikan dari distribusi referensi --- layanan API tetap berjalan normal. Pada kondisi drifted, nilai KS-statistic melonjak melampaui ambang signifikansi $\alpha = 0{,}05$, sehingga sistem mengklasifikasikan kondisi sebagai \textit{drift terdeteksi} dan mengeksekusi fungsi trigger\_retrain untuk mengirim \textit{HTTP POST} ke server n8n.
 
 \subsection{Pengujian Trigger Berbasis Event}
@@ -752,11 +754,6 @@ Transformasi \textit{Weight of Evidence} (WoE) terbukti membantu stabilitas fitu
 Jika batas bin ditentukan semata-mata oleh algoritma tanpa validasi dari komite risiko, model dapat menjadi benar secara teknis tetapi kurang tepat secara ekonomi. Sebagai contoh, perubahan kecil pada batas kelompok \textit{bureau\_score} dapat mengubah interpretasi risiko dan memengaruhi skor akhir nasabah. Oleh karena itu, proses binning perlu divalidasi tidak hanya berdasarkan metrik statistik, tetapi juga berdasarkan kewajaran bisnis dan kebijakan risiko lembaga keuangan.
 
 Batasan ini menunjukkan bahwa implementasi pipeline MLOps pada domain kredit perlu dilengkapi dengan tata kelola model yang kuat. Setiap perubahan fitur, binning WoE, threshold PD, aturan grading, dan mekanisme retraining sebaiknya terdokumentasi, ditinjau, dan disetujui oleh pihak yang bertanggung jawab terhadap risiko model.
-
-\subsection{Dependensi Infrastruktur pada Lingkungan Lokal}
-Pengujian sistem dilakukan pada lingkungan lokal menggunakan Docker dan Docker Compose. Konfigurasi ini memadai untuk validasi prototipe karena seluruh komponen seperti FastAPI, MLflow, n8n, database SQLite, dan file log dapat dijalankan dalam satu lingkungan pengujian. Namun, untuk skenario produksi skala penuh, ketergantungan pada konektivitas lokal antarservice dan penyimpanan file lokal perlu diperhatikan karena dapat menjadi titik kegagalan ketika jumlah pengguna, volume prediksi, atau kebutuhan audit meningkat.
-
-Pada implementasi produksi, database SQLite dapat dipertimbangkan untuk dimigrasikan ke sistem basis data server seperti PostgreSQL, sedangkan log inferensi sebaiknya disimpan pada penyimpanan terpusat atau terdistribusi. Selain itu, komunikasi antarservice perlu dilengkapi autentikasi, pemantauan ketersediaan, serta strategi backup dan recovery. Dengan demikian, sistem tidak hanya siap secara fungsional, tetapi juga lebih kuat dari sisi reliabilitas dan tata kelola operasional.
 
 \section{Ringkasan Bab}
 \label{sec:bab4_ringkasan}

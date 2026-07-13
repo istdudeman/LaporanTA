@@ -2,7 +2,7 @@
 
 \section{Metodologi Penelitian}
 
-\noindent Bab ini menguraikan tahapan metodologi, kerangka desain, dan arsitektur sistem untuk pengembangan model \textit{Credit Risk Scoring} terautomasi dengan integrasi prinsip \textit{Machine Learning Operations} (MLOps)[cite: 3]. Fokus utama sistem ini adalah mengatasi tantangan \textit{data drift} dan \textit{concept drift} secara \textit{real-time}[cite: 4]. Secara umum, metodologi penelitian dirancang untuk memastikan bahwa proses pengembangan model tidak berhenti pada tahap eksperimen, tetapi berlanjut hingga implementasi, pemantauan, dan perbaikan model secara berkesinambungan. Dengan demikian, penelitian ini tidak hanya menghasilkan model prediktif, namun juga menghasilkan kerangka kerja operasional yang siap diterapkan pada lingkungan produksi.
+\noindent Bab ini menguraikan tahapan metodologi, kerangka desain, dan arsitektur sistem untuk pengembangan model \textit{Credit Risk Scoring} terautomasi dengan integrasi prinsip \textit{Machine Learning Operations} (MLOps)[cite: 3]. Fokus utama sistem ini adalah mengatasi tantangan \textit{data drift} secara \textit{real-time}[cite: 4]. Secara umum, metodologi penelitian dirancang untuk memastikan bahwa proses pengembangan model tidak berhenti pada tahap eksperimen, tetapi berlanjut hingga implementasi, pemantauan, dan perbaikan model secara berkesinambungan. Dengan demikian, penelitian ini tidak hanya menghasilkan model prediktif, namun juga menghasilkan kerangka kerja operasional yang siap diterapkan pada lingkungan produksi.
 
 Pendekatan yang digunakan adalah \textit{applied research}, yaitu penelitian terapan yang berorientasi pada penyelesaian masalah nyata melalui perancangan, pembangunan, dan evaluasi sistem[cite: 7, 8]. Permasalahan utama yang diangkat adalah kebutuhan akan sistem penilaian risiko kredit yang akurat, dapat dijelaskan, dan berkelanjutan. Ketiga aspek tersebut menjadi krusial ketika distribusi data berubah seiring waktu. Oleh karena itu, metodologi penelitian ini mengintegrasikan rekayasa data, pengembangan model, evaluasi kualitas data sintetis, serta otomasi proses MLOps dalam satu alur kerja terpadu.
 
@@ -32,6 +32,51 @@ Secara konseptual, arsitektur penelitian terdiri atas empat lapisan utama. Lapis
 \end{table}
 
 Dalam implementasinya, n8n berperan sebagai orkestrator proses yang menghubungkan tahapan data, model, dan \textit{deployment}. MLflow digunakan untuk mencatat parameter eksperimen, metrik evaluasi, serta versi model terbaik. FastAPI digunakan untuk menyediakan endpoint inferensi agar model dapat diakses sebagai layanan, sedangkan Docker memastikan lingkungan eksekusi bersifat konsisten dan mudah dipindahkan ke server lain. Integrasi seluruh komponen tersebut mendukung pembentukan \textit{pipeline} yang terdokumentasi, dapat direproduksi, dan siap digunakan pada skenario produksi.
+
+Untuk memberikan gambaran yang komprehensif mengenai interaksi antar komponen, Gambar~\ref{fig:overall-pipeline} menyajikan diagram \textit{pipeline} keseluruhan sistem. \textit{Pipeline} ini mengintegrasikan seluruh proses mulai dari penerimaan data hingga pengambilan keputusan kredit.
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[
+    node distance=1.2cm and 2cm,
+    box/.style={rectangle, draw=black, thick, fill=blue!5, align=center, text width=3.8cm, rounded corners, minimum height=1.2cm},
+    db/.style={rectangle, draw=black, thick, fill=orange!10, align=center, text width=3.8cm, minimum height=1.2cm},
+    arrow/.style={->, thick, >=stealth}
+]
+
+% Kolom 1
+\node[box, fill=gray!10] (email) {Aplikasi Kredit\\(Email PDF)};
+\node[box, below=of email] (n8n_ingest) {n8n Ingestion\\dan Parse Data};
+\node[box, below=1.2cm of n8n_ingest] (training) {Training dan\\Evaluasi Model};
+\node[box, below=of training] (mlflow) {MLflow\\Model Registry};
+
+% Kolom 2
+\node[db, right=of n8n_ingest] (database) {Database SQLite\\(Data Nasabah)};
+\node[box, right=of mlflow] (fastapi) {FastAPI\\Inference Service};
+\node[box, below=of fastapi] (hitl) {Human-in-the-Loop\\(Approval Email)};
+\node[box, fill=green!10, below=of hitl] (decision) {Keputusan\\Kredit Final};
+
+% Koneksi
+\draw[arrow] (email) -- node[right, font=\footnotesize] {Lampiran} (n8n_ingest);
+\draw[arrow] (n8n_ingest) -- node[above, font=\footnotesize] {Simpan Data} (database);
+\draw[arrow] (database) |- node[near end, above, font=\footnotesize] {Ekstrak Data Latih} (training);
+\draw[arrow] (training) -- node[right, font=\footnotesize] {Log dan Artefak} (mlflow);
+\draw[arrow] (mlflow) -- node[above, font=\footnotesize] {Load Model} (fastapi);
+\draw[arrow] (database) -- node[right, font=\footnotesize] {Data Inferensi} (fastapi);
+\draw[arrow] (fastapi) -- node[right, font=\footnotesize] {Kirim Prediksi} (hitl);
+\draw[arrow] (hitl) -- node[right, font=\footnotesize] {Review Manual} (decision);
+
+\end{tikzpicture}
+\caption{Diagram \textit{pipeline} keseluruhan sistem yang mencakup \textit{ingestion}, \textit{training}, dan \textit{serving}.}
+\label{fig:overall-pipeline}
+\end{figure}
+
+Secara garis besar, \textit{pipeline} keseluruhan terbagi menjadi tiga alur utama yang berkesinambungan:
+\begin{enumerate}
+    \item \textbf{Alur Ingesti Data (\textit{Data Ingestion})}: Berfokus pada penerimaan data nasabah baru dari berbagai sumber, termasuk ekstraksi otomatis dari dokumen PDF melalui email. Data tersebut kemudian distandarisasi dan disimpan ke dalam \textit{database} sebagai sumber kebenaran tunggal (\textit{single source of truth}).
+    \item \textbf{Alur Pelatihan Model (\textit{Model Training \& Registry})}: Data historis dari \textit{database} digunakan secara berkala untuk melatih ulang algoritma \textit{machine learning}. Seluruh eksperimen, metrik performa, dan versi model dicatat secara terpusat dalam MLflow untuk menjamin kemudahan audit dan pelacakan versi.
+    \item \textbf{Alur Inferensi dan Keputusan (\textit{Serving \& Decisioning})}: Model terbaik yang tersimpan di MLflow digunakan oleh layanan API (FastAPI) untuk menghasilkan prediksi risiko secara \textit{real-time}. Keputusan akhir tetap melibatkan manusia (\textit{Human-in-the-Loop}) melalui konfirmasi interaktif yang diorkestrasi oleh n8n.
+\end{enumerate}
 
 
 \subsection{Perancangan Database dan Penyimpanan Data}
@@ -70,9 +115,9 @@ GET    & /api/nasabah/\{id\}                   & get\_nasabah\_by\_id() \\ \hlin
 POST   & /api/nasabah                          & create\_nasabah() \\ \hline
 PUT    & /api/nasabah/\{id\}                   & update\_nasabah() \\ \hline
 DELETE & /api/nasabah/\{id\}                   & delete\_nasabah() \\ \hline
-GET    & /api/nasabah/\{id\/\allowbreak approve}           & update\_approval\_status("Accepted") \\ \hline
-GET    & /api/nasabah/\{id\/\allowbreak reject}            & update\_approval\_status("Rejected") \\ \hline
-POST   & /api/nasabah/\{id\/\allowbreak send-confirmation} & create\_sent\_email() \\ \hline
+GET    & /api/nasabah/\{id\}/\allowbreak approve           & update\_approval\_status("Accepted") \\ \hline
+GET    & /api/nasabah/\{id\}/\allowbreak reject            & update\_approval\_status("Rejected") \\ \hline
+POST   & /api/nasabah/\{id\}/\allowbreak send-confirmation & create\_sent\_email() \\ \hline
 GET    & /api/sent-emails                      & get\_sent\_emails() \\ \hline
 \end{tabularx}
 \end{table}
@@ -191,11 +236,11 @@ Model yang lolos evaluasi disimpan sebagai model kandidat dan dipublikasikan seb
 Sistem tidak memberikan keputusan kredit secara otomatis. Setiap hasil prediksi model harus dikonfirmasi secara manual oleh analis kredit atau pejabat pemutus melalui mekanisme \textit{Human-in-the-Loop} (HITL) berbasis email. Mekanisme ini diimplementasikan melalui alur berikut:
 
 \begin{enumerate}
-    \item Setelah model menghasilkan prediksi, analis kredit memicu \textit{endpoint} POST /api/\allowbreak nasabah/\allowbreak\{id\/\allowbreak send-confirmation} dengan menyertakan alamat email reviewer.
+    \item Setelah model menghasilkan prediksi, analis kredit memicu \textit{endpoint} POST /api/\allowbreak nasabah/\allowbreak\{id\}/\allowbreak send-confirmation dengan menyertakan alamat email reviewer.
     \item Sistem menyusun \textbf{email HTML} yang berisi ringkasan risiko nasabah---mencakup \textit{bureau score}, pendapatan bulanan, jumlah pinjaman, \textit{risk grade}, dan probabilitas \textit{default}---beserta dua tombol interaktif: \textbf{Setuju} dan \textbf{Tolak}.
     \item Email dikirimkan kepada reviewer melalui \textbf{n8n webhook} (/webhook/send-confirmation) yang meneruskan pesan via server SMTP Gmail.
     \item Setiap pengiriman email dicatat secara otomatis ke tabel sent\_emails sebagai \textit{audit trail}.
-    \item Klik pada tombol Setuju memanggil GET /api/nasabah/\{id\/approve}, sedangkan klik Tolak memanggil GET /api/nasabah/\{id\/reject}. Kedua \textit{endpoint} ini memperbarui kolom approval\_status di database menjadi "Accepted" atau "Rejected" dan menampilkan halaman konfirmasi kepada reviewer.
+    \item Klik pada tombol Setuju memanggil GET /api/nasabah/\{id\}/approve, sedangkan klik Tolak memanggil GET /api/nasabah/\{id\}/reject. Kedua \textit{endpoint} ini memperbarui kolom approval\_status di database menjadi "Accepted" atau "Rejected" dan menampilkan halaman konfirmasi kepada reviewer.
     \item Apabila email konfirmasi dikirim ulang untuk nasabah yang sama, sistem secara otomatis mereset approval\_status kembali ke "Pending" agar siklus peninjauan ulang dimulai dari awal.
 \end{enumerate}
 
@@ -256,7 +301,7 @@ Berdasarkan kedua persamaan tersebut, sistem membagi kondisi nasabah ke dalam \t
 Pemisahan tiga zona ini penting karena model \textit{machine learning} hanya mempelajari korelasi statistik antarfitur dan tidak secara eksplisit memahami batas kelayakan usia pelunasan yang diatur oleh kebijakan manajemen risiko institusi. Dengan demikian, logika bisnis pada lapisan API berfungsi sebagai mekanisme pengaman yang melengkapi prediksi model.
 
 \subsubsection{Monitoring Drift dan Retraining Otomatis}
-Setelah model aktif digunakan, sistem melakukan pemantauan terhadap perubahan distribusi fitur dan perubahan hubungan antara fitur dengan target. Pemantauan \textit{data drift} dilakukan dengan membandingkan distribusi data baru terhadap distribusi referensi, sedangkan pemantauan \textit{concept drift} dilakukan dengan mengamati penurunan metrik kinerja model dari waktu ke waktu. Jika indikator \textit{drift} melewati ambang batas yang telah ditentukan, n8n akan memicu ulang proses pelatihan model menggunakan data terbaru. Dengan mekanisme ini, model dapat diperbarui secara lebih responsif tanpa menunggu evaluasi manual yang berpotensi terlambat.
+Setelah model aktif digunakan pada lingkungan produksi, sistem melakukan pemantauan terhadap perubahan distribusi fitur. Pemantauan ini sangat krusial karena pergeseran pola data pelanggan (\textit{data drift}) dapat menyebabkan penurunan integritas model prediktif, yang pada akhirnya mengurangi keandalan keputusan kredit. Pemantauan dilakukan dengan membandingkan distribusi data produksi secara periodik terhadap distribusi data referensi yang digunakan saat pelatihan. Jika indikator \textit{drift} melampaui ambang batas yang telah ditentukan, sistem mendeteksi bahwa model mulai kehilangan relevansinya dengan kondisi riil. Untuk mencegah degradasi performa lebih lanjut, n8n akan secara otomatis memicu proses \textit{retraining} menggunakan data terbaru. Mekanisme ini memastikan bahwa integritas model tetap terjaga dan pembaruan dapat dilakukan secara responsif tanpa harus menunggu evaluasi manual atau audit berkala yang berpotensi terlambat dan menimbulkan kerugian.
 
 
 Pemantauan \textit{drift} pada sistem ini diimplementasikan menggunakan pendekatan \textbf{dual-trigger} dalam modul drift\_monitor.py. Sistem tidak bergantung pada satu mekanisme tunggal, melainkan menggabungkan dua jalur pemicuan yang saling melengkapi:

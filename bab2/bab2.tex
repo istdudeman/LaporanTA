@@ -86,12 +86,7 @@ Dengan mengotomatisasi perhitungan PD dan memantau performa model yang menghasil
 Model \textit{ensemble} seperti XGBoost dapat meningkatkan akurasi prediksi.\cite{mlopsbanking2025}
 
 \subsection{Credit Scoring dan Model Drift}
-\textbf{\textit{Model drift}} adalah penurunan performa model akibat perubahan distribusi data. Dua jenis \textit{drift} utama yang relevan dalam \textit{credit scoring} adalah:
-\begin{itemize}
-    \item \textbf{\textit{Data drift}}: perubahan pada distribusi input (misalnya, perubahan demografi nasabah).
-    \item \textbf{\textit{Concept drift}}: perubahan hubungan antara input dan target (misalnya, krisis ekonomi mengubah perilaku gagal bayar).
-\end{itemize}
-MLOps diperlukan untuk mengatasi masalah ini melalui mekanisme \textit{monitoring}, \textit{alerting}, dan \textit{retraining} model secara otomatis. \cite{nikolaidis2022credit}
+\textbf{\textit{Model drift}} adalah fenomena penurunan integritas dan akurasi model prediktif seiring berjalannya waktu, yang umumnya disebabkan oleh perubahan distribusi data produksi. Dalam konteks \textit{credit scoring}, jenis \textit{drift} utama yang dikaji pada penelitian ini adalah \textbf{\textit{Data drift}}, yaitu pergeseran pada distribusi input seperti perubahan demografi nasabah, fluktuasi ekonomi makro, atau perubahan kebijakan penyaluran kredit. Jika fenomena ini dibiarkan tanpa intervensi, integritas keputusan model akan terdegradasi secara signifikan, sehingga berpotensi meningkatkan risiko salah klasifikasi---seperti menyetujui nasabah berisiko tinggi atau menolak nasabah yang layak. Oleh karena itu, pendekatan MLOps sangat diperlukan untuk mencegah kerugian finansial akibat model yang usang (\textit{stale model}) melalui mekanisme \textit{monitoring}, \textit{alerting}, dan \textbf{\textit{retraining} model secara otomatis} ketika integritas model terindikasi menurun. \cite{nikolaidis2022credit}
 
 \subsection{Evaluasi Kinerja Model dan Transformasi ke Keputusan Operasional}
 
