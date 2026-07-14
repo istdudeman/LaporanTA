@@ -8,7 +8,7 @@ Bab ini menyajikan kesimpulan dan saran dari perancangan serta pengujian sistem 
 Berdasarkan hasil penelitian dan pengujian, diperoleh beberapa kesimpulan sebagai berikut:
 
 \begin{enumerate}
-    \item Penelitian ini berhasil merancang pipeline MLOps untuk operasionalisasi model prediktif risiko kredit, mulai dari pembentukan data sintetis, pra-pemrosesan, pelatihan model, deployment API, interpretabilitas, hingga monitoring drift dan retraining otomatis.
+    \item Penelitian ini berhasil merancang pipeline MLOps untuk operasionalisasi model prediktif risiko kredit, mulai dari pembentukan data sintetis, pra-pemrosesan, pelatihan model, deployment API, interpretabilitas, hingga otomasi pelatihan ulang berkelanjutan (Continuous Training).
 
     \item Penggunaan data sintetis memungkinkan penelitian risiko kredit dilakukan tanpa menggunakan data nasabah riil. Dataset yang dibangun telah memuat atribut demografis, finansial, histori kredit, asuransi, produk pinjaman, serta parameter risiko yang relevan terhadap proses \textit{credit scoring}.
 
@@ -16,7 +16,7 @@ Berdasarkan hasil penelitian dan pengujian, diperoleh beberapa kesimpulan sebaga
 
     \item Integrasi SHAP, FastAPI, sistem grading, dan aturan bisnis membuat hasil prediksi lebih transparan dan operasional. Kategori Undefined juga membantu mencegah keputusan otomatis pada kasus yang membutuhkan pengecekan manual, seperti usia pelunasan yang melebihi batas kebijakan.
 
-    \item Implementasi MLflow dan n8n menunjukkan bahwa proses pelacakan eksperimen, monitoring drift, dan pemicuan retraining dapat diotomatisasi. Dengan demikian, sistem yang dibangun dapat menjadi prototipe awal pipeline MLOps untuk model risiko kredit.
+    \item Implementasi MLflow dan n8n menunjukkan bahwa proses pelacakan eksperimen, \textit{Continuous Training}, dan pemicuan retraining dapat diotomatisasi. Dengan demikian, sistem yang dibangun dapat menjadi prototipe awal pipeline MLOps untuk model risiko kredit.
 \end{enumerate}
 
 Secara keseluruhan, penelitian ini menunjukkan bahwa kombinasi model prediktif, interpretabilitas, aturan bisnis, dan otomasi MLOps dapat mendukung sistem penilaian risiko kredit yang lebih terstruktur. Namun, karena data yang digunakan masih bersifat sintetis, sistem ini tetap memerlukan validasi lebih lanjut sebelum diterapkan pada keputusan kredit riil.

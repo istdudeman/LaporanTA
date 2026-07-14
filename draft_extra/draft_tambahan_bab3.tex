@@ -156,43 +156,22 @@ Berdasarkan kedua persamaan tersebut, sistem membagi kondisi nasabah ke dalam \t
 Pemisahan tiga zona ini penting karena model \textit{machine learning} hanya mempelajari korelasi statistik antarfitur dan tidak secara eksplisit memahami batas kelayakan usia pelunasan yang diatur oleh kebijakan manajemen risiko institusi. Dengan demikian, logika bisnis pada lapisan API berfungsi sebagai mekanisme pengaman yang melengkapi prediksi model.
 
 % ============================================================
-% BLOK E — Ganti atau perluas \subsubsection{Monitoring Drift
+% BLOK E — Ganti atau perluas \subsubsection{Continuous Training
 %           dan Retraining Otomatis} yang sudah ada.
-%           Tambahkan PSI, threshold eksplisit, dan inference logging.
+%           Tambahkan metrik evaluasi model baru.
 % ============================================================
 
 % [Letakkan setelah kalimat pembuka sub-bab yang sudah ada]
 
-Pemantauan \textit{drift} diimplementasikan menggunakan dua metrik stabilitas yang saling melengkapi dalam modul drift\_monitor.py:
+% [Letakkan setelah kalimat pembuka sub-bab yang sudah ada]
+
+Keandalan \textit{Continuous Training} diukur bukan dari mendeteksi \textit{drift} pada fitur individu, melainkan langsung pada evaluasi performa model baru hasil \textit{retraining}. Setelah n8n memicu skrip \textit{retraining} (baik karena jadwal rutin, akumulasi data, maupun \textit{trigger} manual), sistem melakukan prosedur \textit{Quality Gate} terhadap model baru menggunakan metrik:
 
 \begin{enumerate}
-    \item \textbf{Population Stability Index (PSI)} --- mengukur seberapa besar pergeseran distribusi skor prediksi model secara keseluruhan antara populasi referensi (data pelatihan) dan populasi produksi terkini. PSI dihitung dengan formula:
-    \begin{equation}
-        \text{PSI} = \sum_{i=1}^{n} \left( p_{cur,i} - p_{ref,i} \right) \cdot \ln\!\left(\frac{p_{cur,i}}{p_{ref,i}}\right)
-        \label{eq:psi}
-    \end{equation}
-    di mana $p_{ref,i}$ dan $p_{cur,i}$ adalah proporsi observasi pada \textit{bin} ke-$i$ untuk data referensi dan data produksi.
-
-    \item \textbf{Characteristic Stability Index (CSI)} --- menerapkan formula yang sama pada tingkat per-fitur individual untuk mengidentifikasi fitur mana yang mengalami pergeseran distribusi paling signifikan, sehingga akar penyebab \textit{drift} dapat ditelusuri.
+    \item \textbf{Area Under the Curve (AUC)} --- mengukur kemampuan model secara agregat dalam membedakan kelas \textit{default} dan \textit{non-default}. Model baru harus memiliki nilai AUC minimal 0.75 atau lebih tinggi dari model produksi yang ada saat ini.
+    \item \textbf{F1-Score} --- memastikan keseimbangan antara presisi (meminimalkan risiko gagal bayar yang terlewat) dan \textit{recall} (meminimalkan penolakan terhadap nasabah yang sebenarnya berisiko rendah).
 \end{enumerate}
 
-Interpretasi nilai PSI dan CSI mengikuti panduan standar yang ditampilkan pada Tabel~\ref{tab:psi-interp}.
+Apabila model baru lolos \textit{Quality Gate} ini, skrip secara otomatis mendaftarkan model tersebut ke \textit{MLflow Model Registry} dan memicu \textit{endpoint} khusus pada aplikasi FastAPI untuk melakukan \textit{hot-reload}, sehingga aplikasi langsung melayani prediksi menggunakan model terbaru tanpa mengalami \textit{downtime}.
 
-\begin{table}[H]
-\centering
-\caption{Panduan Interpretasi Nilai PSI dan CSI}
-\label{tab:psi-interp}
-\begin{tabular}{ccc}
-\toprule
-\textbf{Nilai PSI / CSI} & \textbf{Interpretasi} & \textbf{Tindakan} \\
-\midrule
-$< 0.10$     & Tidak ada pergeseran signifikan & Pantau rutin \\
-$0.10 - 0.25$ & Pergeseran sedang              & Investigasi lanjut \\
-$> 0.25$     & Pergeseran mayor               & \textit{Retraining} diperlukan \\
-\bottomrule
-\end{tabular}
-\end{table}
-
-Apabila nilai PSI atau salah satu CSI fitur melampaui ambang batas \textbf{0.25}, sistem secara otomatis memicu \textit{endpoint} \textit{webhook} n8n (/webhook/retrain-trigger) untuk memulai proses pelatihan ulang model menggunakan data terbaru.
-
-Agar deteksi \textit{drift} dapat beroperasi secara \textit{closed-loop} pada lingkungan produksi, setiap permintaan prediksi ke \textit{endpoint} /predict secara otomatis dicatat ke file n8n\_data/inference\_logs.jsonl. File \textit{log} ini berisi seluruh fitur input nasabah, probabilitas \textit{default} yang dihasilkan model, dan \textit{timestamp} prediksi. Modul drift\_monitor.py kemudian membandingkan distribusi data di file \textit{log} ini dengan distribusi referensi dari data pelatihan untuk menghitung nilai PSI dan CSI. Tanpa mekanisme pencatatan inferensi ini, deteksi \textit{drift} tidak memiliki data produksi yang representatif untuk dianalisis.
+Agar \textit{Continuous Training} dapat beroperasi secara \textit{closed-loop} pada lingkungan produksi, setiap permintaan prediksi ke \textit{endpoint} /predict secara otomatis dicatat oleh \textit{MLflow Tracing}. Pencatatan ini berisi seluruh fitur input nasabah, probabilitas \textit{default} yang dihasilkan model, dan \textit{timestamp} prediksi. Data operasional historis ini dikumpulkan dan menjadi sumber data \textit{ground truth} ketika label performa kredit aktual nasabah telah diperbarui, yang kemudian digunakan kembali oleh n8n sebagai dataset untuk siklus \textit{Continuous Training} berikutnya. Tanpa mekanisme pencatatan ini, proses \textit{retraining} otomatis tidak akan memiliki suplai data produksi yang relevan.

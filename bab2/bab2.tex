@@ -58,7 +58,7 @@ Transformasi WoE dilakukan dengan mendiskretisasi variabel numerik ke dalam bebe
 
 Sementara itu, \textit{Information Value} (IV) digunakan sebagai metrik seleksi fitur untuk mengukur kekuatan prediktif suatu variabel terhadap risiko gagal bayar. Variabel dengan nilai IV yang sangat rendah dianggap tidak informatif, sedangkan nilai IV yang terlalu tinggi dapat mengindikasikan potensi \textit{data leakage}.\cite{maurino2025data}
 
-Penggunaan WoE dan IV memiliki relevansi langsung dengan implementasi MLOps, karena fitur yang lebih stabil mempermudah proses pemantauan \textit{data drift}. Dalam konteks ini, perubahan distribusi fitur WoE dapat dideteksi secara kuantitatif menggunakan metrik seperti \textit{Population Stability Index} (PSI), yang selanjutnya digunakan sebagai pemicu proses \textit{retraining} otomatis dalam pipeline MLOps.\cite{Chang2024}
+Penggunaan WoE dan IV memiliki relevansi langsung dengan implementasi MLOps, karena fitur yang lebih stabil mempermudah konsistensi data selama \textit{Continuous Training}. Dalam konteks ini, stabilitas fitur WoE memungkinkan proses \textit{retraining} otomatis yang dieksekusi secara periodik maupun berbasis akumulasi data baru (\textit{event-based}) berjalan dengan andal tanpa anomali yang ekstrem pada pipeline MLOps.\cite{Chang2024}
 
 
 \subsection{Analisis Risiko Kredit}
@@ -85,8 +85,8 @@ Dengan mengotomatisasi perhitungan PD dan memantau performa model yang menghasil
 \end{itemize}
 Model \textit{ensemble} seperti XGBoost dapat meningkatkan akurasi prediksi.\cite{mlopsbanking2025}
 
-\subsection{Credit Scoring dan Model Drift}
-\textbf{\textit{Model drift}} adalah fenomena penurunan integritas dan akurasi model prediktif seiring berjalannya waktu, yang umumnya disebabkan oleh perubahan distribusi data produksi. Dalam konteks \textit{credit scoring}, jenis \textit{drift} utama yang dikaji pada penelitian ini adalah \textbf{\textit{Data drift}}, yaitu pergeseran pada distribusi input seperti perubahan demografi nasabah, fluktuasi ekonomi makro, atau perubahan kebijakan penyaluran kredit. Jika fenomena ini dibiarkan tanpa intervensi, integritas keputusan model akan terdegradasi secara signifikan, sehingga berpotensi meningkatkan risiko salah klasifikasi---seperti menyetujui nasabah berisiko tinggi atau menolak nasabah yang layak. Oleh karena itu, pendekatan MLOps sangat diperlukan untuk mencegah kerugian finansial akibat model yang usang (\textit{stale model}) melalui mekanisme \textit{monitoring}, \textit{alerting}, dan \textbf{\textit{retraining} model secara otomatis} ketika integritas model terindikasi menurun. \cite{nikolaidis2022credit}
+\subsection{Credit Scoring dan Stale Model}
+\textbf{\textit{Stale model}} adalah fenomena penurunan integritas dan akurasi model prediktif seiring berjalannya waktu karena model sudah tidak relevan lagi dengan kondisi data riil atau data produksi yang terus berkembang. Dalam konteks \textit{credit scoring}, model yang dilatih pada masa lalu perlahan akan tertinggal dari dinamika demografi nasabah, fluktuasi ekonomi makro, atau tren risiko kredit terbaru. Jika fenomena ini dibiarkan tanpa intervensi, integritas keputusan model akan terdegradasi secara signifikan, sehingga berpotensi meningkatkan risiko salah klasifikasi---seperti menyetujui nasabah berisiko tinggi atau menolak nasabah yang layak. Oleh karena itu, pendekatan MLOps sangat diperlukan untuk mencegah kerugian finansial akibat \textit{stale model} melalui mekanisme \textbf{\textit{Continuous Training} (CT)} dan \textbf{\textit{retraining} model secara otomatis} yang dijadwalkan secara berkala maupun dipicu oleh akumulasi data produksi baru. \cite{nikolaidis2022credit}
 
 \subsection{Evaluasi Kinerja Model dan Transformasi ke Keputusan Operasional}
 
@@ -94,7 +94,7 @@ Evaluasi kinerja model prediksi risiko kredit tidak hanya berfokus pada akurasi 
 
 Statistik K-S memiliki peran penting dalam konteks operasional, karena digunakan untuk menentukan ambang batas (\textit{cut-off}) skor kredit yang optimal. Ambang batas ini merepresentasikan titik pemisahan maksimum antara distribusi probabilitas debitur baik dan debitur gagal bayar, sehingga dapat diterjemahkan secara langsung menjadi kebijakan kredit.
 
-Output model berupa nilai \textit{Probability of Default} (PD) selanjutnya ditransformasikan ke dalam bentuk \textit{credit scorecard} dan \textit{risk grade} institusional. Proses ini memungkinkan hasil prediksi model untuk diintegrasikan secara otomatis ke dalam sistem pengambilan keputusan kredit, seperti keputusan \textit{approve}, \textit{reject}, atau \textit{manual review}, yang diorkestrasi melalui pipeline MLOps.\cite{nikolaidis2022credit,mlopsdrift2025}
+Output model berupa nilai \textit{Probability of Default} (PD) selanjutnya ditransformasikan ke dalam bentuk \textit{credit scorecard} dan \textit{risk grade} institusional. Proses ini memungkinkan hasil prediksi model untuk diintegrasikan secara otomatis ke dalam sistem pengambilan keputusan kredit, seperti keputusan \textit{approve}, \textit{reject}, atau \textit{manual review}, yang diorkestrasi melalui pipeline MLOps.\cite{nikolaidis2022credit}
 
 
 \subsection{Konsep \textit{Machine Learning Operations} (MLOps)}

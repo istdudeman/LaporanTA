@@ -2,11 +2,11 @@
 \label{sec:chap4_pengujian}
 
 \section{Pendahuluan Pengujian}
-Bab ini membahas pengujian dan analisis terhadap sistem \textit{Credit Risk Scoring} berbasis \textit{Machine Learning Operations} (MLOps) yang telah dirancang pada Bab III. Pengujian tidak hanya diarahkan untuk melihat performa model prediktif, tetapi juga untuk memverifikasi kesiapan sistem sebagai pipeline operasional yang dapat melakukan pengolahan data, pelatihan model, interpretasi hasil, validasi kualitas data, penyajian model melalui API, serta pemantauan drift.
+Bab ini membahas pengujian dan analisis terhadap sistem \textit{Credit Risk Scoring} berbasis \textit{Machine Learning Operations} (MLOps) yang telah dirancang pada Bab III. Pengujian tidak hanya diarahkan untuk melihat performa model prediktif, tetapi juga untuk memverifikasi kesiapan sistem sebagai pipeline operasional yang dapat melakukan pengolahan data, pelatihan model, interpretasi hasil, validasi kualitas data, penyajian model melalui API, serta otomasi \textit{Continuous Training}.
 
 Ruang lingkup pengujian disusun agar mampu menjawab dua kebutuhan utama. Pertama, kebutuhan akademik, yaitu membuktikan bahwa metode yang digunakan memiliki dasar kuantitatif dan dapat dievaluasi secara ilmiah. Kedua, kebutuhan implementatif, yaitu membuktikan bahwa sistem dapat berjalan sebagai rangkaian proses MLOps yang mendukung reprodusibilitas, pelacakan eksperimen, dan pengambilan keputusan berbasis model. Dengan demikian, Bab IV berfungsi sebagai penghubung antara rancangan sistem dan bukti implementasi.
 
-Secara umum, pengujian dilakukan melalui enam skenario utama, yaitu pengujian \textit{preprocessing} menggunakan WoE dan IV, penanganan ketidakseimbangan kelas menggunakan SMOTE, pelatihan dan \textit{hyperparameter tuning} model XGBoost, pengujian kualitas data sintetis menggunakan pendekatan TSTR dan TRTR, pengujian layanan inferensi FastAPI beserta aturan bisnis, serta pengujian deteksi drift dan pemicuan \textit{retraining} otomatis.
+Secara umum, pengujian dilakukan melalui enam skenario utama, yaitu pengujian \textit{preprocessing} menggunakan WoE dan IV, penanganan ketidakseimbangan kelas menggunakan SMOTE, pelatihan dan \textit{hyperparameter tuning} model XGBoost, pengujian kualitas data sintetis menggunakan pendekatan TSTR dan TRTR, pengujian layanan inferensi FastAPI beserta aturan bisnis, serta pengujian pipeline \textit{Continuous Training} dan pemicuan \textit{retraining} otomatis.
 
 \section{Lingkungan Pengujian}
 \label{sec:bab4_lingkungan_pengujian}
@@ -80,7 +80,7 @@ Skenario pengujian dirancang untuk mencakup seluruh siklus hidup sistem, mulai d
 \hline
 5 & API serving dan aturan bisnis & Memverifikasi layanan prediksi FastAPI, penerapan aturan usia, database, dan konfirmasi email HITL. \\
 \hline
-6 & Drift dan retraining otomatis & Menguji deteksi perubahan distribusi data dan pemicuan webhook n8n untuk retraining. \\
+6 & Continuous Training dan Retraining Otomatis & Menguji mekanisme otomasi pemicuan eksekusi n8n untuk pelatihan ulang (retraining) model. \\
 \hline
 7 & Studi ablasi perbandingan model & Mengukur kontribusi transformasi WoE dan SMOTE pada beberapa arsitektur model. \\
 \hline
@@ -89,7 +89,7 @@ Skenario pengujian dirancang untuk mencakup seluruh siklus hidup sistem, mulai d
 
 Pembagian skenario ini memperlihatkan bahwa pengujian tidak berhenti pada akurasi model. Sistem juga diuji dari sisi kualitas data, keamanan penggunaan data sintetis, ketahanan aturan bisnis, serta kesiapan pemantauan model setelah deployment.
 
-Sebagai gambaran menyeluruh terhadap cakupan fungsi yang diuji, diagram use case sistem ditunjukkan pada Gambar \ref{fig:bab4_use_case_diagram}. Diagram tersebut memperlihatkan interaksi antara pengguna, analis atau pihak penanggung jawab persetujuan, layanan prediksi, orkestrasi n8n, serta komponen pendukung seperti ingestion dokumen, pengiriman konfirmasi, monitoring drift, dan retraining. Dengan demikian, diagram ini menjadi penghubung antara skenario pengujian pada Bab IV dan implementasi pipeline MLOps yang telah dirancang pada Bab III.
+Sebagai gambaran menyeluruh terhadap cakupan fungsi yang diuji, diagram use case sistem ditunjukkan pada Gambar \ref{fig:bab4_use_case_diagram}. Diagram tersebut memperlihatkan interaksi antara pengguna, analis atau pihak penanggung jawab persetujuan, layanan prediksi, orkestrasi n8n, serta komponen pendukung seperti ingestion dokumen, pengiriman konfirmasi, otomasi \textit{Continuous Training}, dan retraining. Dengan demikian, diagram ini menjadi penghubung antara skenario pengujian pada Bab IV dan implementasi pipeline MLOps yang telah dirancang pada Bab III.
 
 \begin{figure}[H]
 \centering
@@ -688,47 +688,28 @@ Visualisasi batas keputusan mitigasi ditunjukkan pada Gambar \ref{fig:bab4_mitig
 
 Setelah mekanisme ini diterapkan, sistem berhasil menyeimbangkan kecerdasan prediktif model dengan kepatuhan terhadap kebijakan risiko perbankan. Nasabah lanjut usia yang sebelumnya dapat lolos karena profil keuangannya terlihat baik kini terjaring oleh deteksi anomali usia pelunasan. Namun, sistem tidak langsung menolak secara kaku, melainkan memberikan rekomendasi terukur melalui pengurangan tenor atau pertimbangan asuransi jiwa kredit. Dengan demikian, aturan bisnis ini berfungsi sebagai lapisan pengaman tambahan yang membuat hasil inferensi model lebih realistis dan dapat diterapkan pada proses kredit operasional.
 
-\section{Pengujian Deteksi Drift dan Retraining Otomatis}
+\section{Pengujian Continuous Training dan Retraining Otomatis}
 \label{sec:bab4_drift_retraining}
-Pengujian \textit{drift} dilakukan untuk memvalidasi mekanisme pemantauan distribusi data produksi pada modul drift\_monitor.py. Sistem yang dibangun menggunakan pendekatan \textbf{dual-trigger}, yaitu dua jalur pemicuan yang bekerja secara bersamaan: trigger berbasis jadwal setiap 7 hari dan trigger berbasis event saat data nasabah baru diinput. Pengujian difokuskan pada skenario terkontrol untuk membuktikan bahwa kedua mekanisme ini dapat mendeteksi pergeseran distribusi dan secara otomatis memicu proses retraining melalui webhook n8n.
+Pengujian ini dilakukan untuk memvalidasi ketahanan dan otomatisasi \textit{pipeline Continuous Training} (CT) yang berjalan di atas n8n. Sistem yang dibangun menggunakan pendekatan \textbf{dual-trigger} untuk memicu \textit{retraining}: \textit{trigger} berbasis jadwal secara periodik (setiap 7 hari) dan \textit{trigger} berbasis \textit{event} saat terjadi akumulasi data nasabah baru pada *database*. Pengujian difokuskan pada simulasi skenario operasional untuk membuktikan bahwa orkestrator n8n mampu secara mandiri menjalankan siklus pembaruan model tanpa memerlukan intervensi manual yang repetitif, serta memiliki \textit{Quality Gate} untuk memastikan hanya model dengan performa (AUC) lebih baik yang diloloskan ke \textit{production}.
 
-\subsection{Pengujian Trigger Berbasis Jadwal}
+\subsection{Pengujian Mekanisme Pemicuan (Trigger)}
 
-Pada jalur ini, sistem secara terjadwal membandingkan distribusi fitur data produksi terkini terhadap distribusi data referensi menggunakan \textbf{Kolmogorov-Smirnov (KS) Test}. KS Test dipilih karena merupakan uji distribusi non-parametrik yang tidak memerlukan asumsi distribusi tertentu sehingga cocok untuk fitur tabular dengan distribusi campuran.
+Pada skenario pertama, pengujian dilakukan dengan mengaktifkan \textit{Schedule Trigger} pada antarmuka n8n dan menyimulasikan tibanya waktu eksekusi. Hasil log pada n8n menunjukkan bahwa \textit{node execute command} berhasil memanggil skrip \textit{trainingCredit.py}, yang secara sukses menarik data terbaru dari SQLite, melakukan pra-pemrosesan ulang, melatih model XGBoost, dan mencatatkan artefak baru ke dalam \textit{MLflow Tracking Server}. 
 
-Skenario \textbf{stabil} dibandingkan dengan skenario \textbf{drift} yang mensimulasikan penurunan pendapatan sebesar 20\% dan peningkatan jumlah pinjaman sebesar 35\%, merepresentasikan kondisi makroekonomi yang memburuk. Hasil pengujian ditampilkan pada Tabel~\ref{tab:bab4_drift}.
+Pada skenario kedua, pengujian difokuskan pada \textit{Event-Based Trigger}. Pengujian mensimulasikan injeksi sejumlah data nasabah baru melampaui \textit{ingestion threshold} melalui API. Sistem mencatat lonjakan data, kemudian API mengirimkan instruksi \textit{webhook} secara internal kepada n8n untuk segera menjalankan \textit{workflow retraining}. Respons dari \textit{webhook} menunjukkan status keberhasilan eksekusi \textit{pipeline} dan pembaruan arsitektur model sejalan dengan akumulasi informasi baru, mencerminkan mekanisme \textit{closed-loop} yang responsif.
 
-\begin{table}[H]
-\centering
-\caption{Hasil pengujian deteksi drift menggunakan KS Statistic}
-\label{tab:bab4_drift}
-\begin{tabular}{|p{0.22\textwidth}|p{0.16\textwidth}|p{0.16\textwidth}|p{0.14\textwidth}|p{0.18\textwidth}|}
-\hline
-\textbf{Fitur} & \textbf{KS Stabil} & \textbf{KS Drifted} & \textbf{p-value} & \textbf{Tindakan} \\
-\hline
-\textit{monthly\_income} & 0,043 & 0,312 & $< 0{,}05$ & Webhook retrain dipicu \\
-\hline
-\textit{loan\_amount} & 0,038 & 0,287 & $< 0{,}05$ & Webhook retrain dipicu \\
-\hline
-\end{tabular}
-\end{table}
+\subsection{Pengujian Quality Gate dan Model Reloading}
 
-Selain mengevaluasi metrik statistik, rancangan monitoring juga memerlukan pencatatan inferensi agar sistem memiliki data produksi yang dapat dibandingkan dengan data referensi. Setiap permintaan ke \textit{endpoint} \textit{/predict} dapat dicatat dalam format log terstruktur yang berisi fitur input, probabilitas \textit{default}, \textit{grade} risiko, dan waktu prediksi. Log inferensi tersebut menjadi dasar untuk menghitung pergeseran distribusi secara berkala, baik pada tingkat skor prediksi maupun fitur individual. Dengan demikian, proses deteksi \textit{drift} tidak hanya bergantung pada data simulasi, tetapi juga dapat diperluas menjadi pemantauan produksi yang bersifat \textit{closed-loop}.
+Untuk memvalidasi integritas pengiriman model ke layanan inferensi, skrip \textit{trainingCredit.py} mengimplementasikan tahap komparasi. Dalam pengujian ini, model baru menghasilkan skor AUC sebesar 0.835, yang melampaui ambang minimal 0.75 dan lebih baik dibanding versi produksi sebelumnya. \textit{MLflow Model Registry} mencatat model baru tersebut dengan tahapan "Production", sedangkan model lama dipindahkan ke status "Archived". 
 
-Pada kondisi stabil, nilai KS-statistic kedua fitur berada di bawah 0,05 dengan \textit{p-value} $> 0{,}05$, menunjukkan bahwa distribusi produksi tidak berbeda signifikan dari distribusi referensi --- layanan API tetap berjalan normal. Pada kondisi drifted, nilai KS-statistic melonjak melampaui ambang signifikansi $\alpha = 0{,}05$, sehingga sistem mengklasifikasikan kondisi sebagai \textit{drift terdeteksi} dan mengeksekusi fungsi trigger\_retrain untuk mengirim \textit{HTTP POST} ke server n8n.
+Secara bersamaan, skrip mengirimkan \textit{HTTP POST} ke titik akhir \textit{reload} pada FastAPI (\textit{/reload-model}). Log terminal FastAPI menunjukkan sistem langsung memuat ulang objek model (\textit{hot-reload}) tanpa mematikan layanan API secara keseluruhan, sehingga tidak ada \textit{downtime} yang terjadi selama proses \textit{Continuous Training}.
 
-\subsection{Pengujian Trigger Berbasis Event}
-
-Jalur kedua bekerja secara independen. Setiap kali endpoint POST /api/nasabah menerima data nasabah baru, sistem menambah penghitung kumulatif data baru sejak model terakhir dilatih. Apabila penghitung melampaui \textit{ingestion threshold} yang dikonfigurasi, \textit{workflow} n8n memicu evaluasi dan retraining secara langsung tanpa menunggu jadwal mingguan.
-
-Hal ini menunjukkan bahwa pipeline MLOps mampu membentuk mekanisme \textit{closed-loop automation}: model tidak hanya digunakan untuk inferensi, tetapi juga dipantau dan diperbarui secara responsif --- baik oleh perubahan distribusi data (schedule trigger) maupun oleh volume data baru yang masuk (event trigger).
-
-Implementasi orkestrasi retraining otomatis pada n8n ditunjukkan pada Gambar \ref{fig:bab4_n8n_workflow}. Workflow tersebut memuat beberapa komponen utama, yaitu \textit{Schedule Trigger} untuk eksekusi berkala, \textit{Webhook} untuk menerima pemicu eksternal dari modul drift monitoring, node eksekusi perintah untuk menjalankan proses pemeriksaan atau pelatihan ulang, node kondisional untuk menentukan apakah retraining diperlukan, serta \textit{HTTP Request} untuk menghubungkan proses otomasi dengan layanan terkait. Dengan struktur tersebut, proses monitoring dan retraining dapat dijalankan secara otomatis tanpa intervensi manual penuh.
+Implementasi orkestrasi \textit{Continuous Training} otomatis pada n8n ditunjukkan pada Gambar \ref{fig:bab4_n8n_workflow}. Workflow tersebut memuat beberapa komponen utama, yaitu \textit{Schedule Trigger} untuk eksekusi berkala, \textit{Webhook} untuk menerima pemicu akumulasi data, node eksekusi perintah untuk menjalankan proses pelatihan ulang, serta \textit{HTTP Request} untuk menghubungkan proses otomasi dengan layanan inferensi. Dengan struktur tersebut, proses CT dapat dijalankan secara otomatis dari hulu ke hilir.
 
 \begin{figure}[H]
 \centering
 \includegraphics[width=0.92\textwidth]{bab4/Screenshot 2026-05-25 171559.png}
-\caption{Workflow n8n untuk orkestrasi monitoring drift dan retraining otomatis}
+\caption{Workflow n8n untuk orkestrasi Continuous Training dan retraining otomatis}
 \label{fig:bab4_n8n_workflow}
 \end{figure}
 
@@ -757,6 +738,6 @@ Batasan ini menunjukkan bahwa implementasi pipeline MLOps pada domain kredit per
 
 \section{Ringkasan Bab}
 \label{sec:bab4_ringkasan}
-Bab ini telah menguraikan hasil pengujian sistem mulai dari preprocessing, penanganan imbalance, pelatihan model, evaluasi performa, interpretabilitas, quality gate data sintetis, API serving, database nasabah, ingestion PDF, konfirmasi email HITL, aturan bisnis, hingga deteksi drift. Hasil pengujian menunjukkan bahwa model XGBoost memperoleh AUC 0,8262 dengan keseimbangan presisi dan recall yang baik. Transformasi WoE dan seleksi IV membantu memperkuat dasar pemilihan fitur, sedangkan SHAP memberikan transparansi terhadap faktor yang memengaruhi prediksi.
+Bab ini telah menguraikan hasil pengujian sistem mulai dari preprocessing, penanganan imbalance, pelatihan model, evaluasi performa, interpretabilitas, quality gate data sintetis, API serving, database nasabah, ingestion PDF, konfirmasi email HITL, aturan bisnis, hingga otomasi Continuous Training. Hasil pengujian menunjukkan bahwa model XGBoost memperoleh AUC 0,8262 dengan keseimbangan presisi dan recall yang baik. Transformasi WoE dan seleksi IV membantu memperkuat dasar pemilihan fitur, sedangkan SHAP memberikan transparansi terhadap faktor yang memengaruhi prediksi.
 
-Selain performa model, hasil pengujian juga menunjukkan bahwa data sintetis lolos quality gate utilitas dan privasi, layanan FastAPI mampu mengembalikan prediksi beserta penjelasan, database mendukung CRUD dan audit email, workflow n8n mendukung retraining serta ingestion PDF, aturan bisnis dapat mencegah keputusan yang melanggar kebijakan, dan sistem drift monitoring mampu memicu retraining otomatis. Dengan demikian, sistem yang dikembangkan tidak hanya memenuhi kebutuhan pemodelan prediktif, tetapi juga menunjukkan kesiapan sebagai pipeline MLOps yang operasional, dapat diaudit, dan tetap membutuhkan tata kelola manusia pada kasus yang berisiko.
+Selain performa model, hasil pengujian juga menunjukkan bahwa data sintetis lolos quality gate utilitas dan privasi, layanan FastAPI mampu mengembalikan prediksi beserta penjelasan, database mendukung CRUD dan audit email, workflow n8n mendukung ingestion PDF, aturan bisnis dapat mencegah keputusan yang melanggar kebijakan, dan pipeline Continuous Training mampu memicu pembaruan model secara otomatis. Dengan demikian, sistem yang dikembangkan tidak hanya memenuhi kebutuhan pemodelan prediktif, tetapi juga menunjukkan kesiapan sebagai pipeline MLOps yang operasional, tangguh dari keusangan data, dapat diaudit, dan tetap membutuhkan tata kelola manusia pada kasus yang berisiko.
