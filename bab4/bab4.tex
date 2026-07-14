@@ -209,12 +209,6 @@ Hasil perhitungan IV menunjukkan bahwa fitur \textit{bureau\_score} menjadi pred
 \end{tabular}
 \end{table}
 
-\begin{figure}[H]
-\centering
-\includegraphics[width=0.9\textwidth]{bab4/Tabel_IV_Format.png}
-\caption{Tabel nilai Information Value untuk seleksi fitur}
-\label{fig:bab4_tabel_iv}
-\end{figure}
 
 
 
@@ -277,15 +271,7 @@ Parameter yang diuji meliputi \textit{max\_depth}, \textit{learning\_rate}, \tex
 \end{tabular}
 \end{table}
 
-Visualisasi konfigurasi tuning terbaik ditampilkan pada Gambar \ref{fig:bab4_tabel_tuning}. Dokumentasi parameter ini penting agar proses pelatihan model dapat ditelusuri kembali dan direplikasi.
-
-\begin{figure}[H]
-\centering
-\includegraphics[width=0.86\textwidth]{bab4/Tabel_Tuning_Format.png}
-\caption{Konfigurasi hyperparameter terbaik pada model XGBoost}
-\label{fig:bab4_tabel_tuning}
-\end{figure}
-
+Dokumentasi parameter pada Tabel \ref{tab:bab4_tuning_summary} ini penting agar proses pelatihan model dapat ditelusuri kembali dan direplikasi.
 Model terbaik kemudian dievaluasi pada data uji independen. Hasil evaluasi menunjukkan AUC sebesar 0,8262, presisi sebesar 0,8024, recall sebesar 0,7549, dan F1-score sebesar 0,7779. Nilai AUC yang berada di atas 0,80 menunjukkan bahwa model memiliki kemampuan diskriminasi yang baik dalam membedakan nasabah berisiko rendah dan nasabah berisiko tinggi.
 
 Selain metrik evaluasi akhir, proses pelatihan dan pencatatan eksperimen juga diverifikasi melalui antarmuka MLflow. Gambar \ref{fig:bab4_mlflow_experiments} menunjukkan daftar eksperimen \textit{Credit Risk MLOPS} yang tersimpan pada MLflow. Setiap eksperimen merepresentasikan proses pelatihan yang dicatat beserta waktu pembuatan dan pembaruannya, sehingga riwayat eksperimen dapat ditelusuri kembali ketika model perlu dibandingkan atau direproduksi.
@@ -316,15 +302,7 @@ F1-score & 0,7779 & Keseimbangan presisi dan recall cukup baik. \\
 \end{tabular}
 \end{table}
 
-Ringkasan metrik evaluasi juga disajikan pada Gambar \ref{fig:bab4_tabel_metrik}, sedangkan kurva ROC ditunjukkan pada Gambar \ref{fig:bab4_roc_curve}. Kurva ROC digunakan untuk melihat performa model pada berbagai ambang keputusan, bukan hanya pada satu nilai ambang tertentu.
-
-\begin{figure}[H]
-\centering
-\includegraphics[width=0.86\textwidth]{bab4/Tabel_Metrik_Evaluasi_Format.png}
-\caption{Tabel metrik evaluasi model prediktif risiko kredit}
-\label{fig:bab4_tabel_metrik}
-\end{figure}
-
+Selain ringkasan metrik evaluasi pada Tabel \ref{tab:bab4_metrik_model}, kurva ROC ditunjukkan pada Gambar \ref{fig:bab4_roc_curve}. Kurva ROC digunakan untuk melihat performa model pada berbagai ambang keputusan, bukan hanya pada satu nilai ambang tertentu.
 \begin{figure}[H]
 \centering
 \includegraphics[width=0.8\textwidth]{bab4/ROC_Curve.png}
